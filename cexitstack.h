@@ -47,7 +47,7 @@ struct {                         \
 if ((stack).capacity <= (stack).length) abort(); \
 (stack).items[(stack).length++] = (cexitstack_item){ .object = (obj), .condition = (cond), .func = (fun) }; }
 
-#define CEXITSTACK_RETURN(stack, cond, retval) {                                      \
+#define CEXITSTACK_RETURN(stack, retval, cond) {                                      \
 int avoid_using_this_macro_internal_variable = (stack).length;                        \
 while (avoid_using_this_macro_internal_variable-- > 0) {                              \
     cexitstack_item *item = (stack).items + avoid_using_this_macro_internal_variable; \
