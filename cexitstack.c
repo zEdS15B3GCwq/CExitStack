@@ -5,7 +5,7 @@
 
 int cexitstack_expand( cexitstack *stack, unsigned int added_capacity );
 
-extern cexitstack *
+inline extern cexitstack *
 cexitstack_new( unsigned int initial_length )
 {
     cexitstack *stack = calloc( 1, sizeof( cexitstack ) );
@@ -18,7 +18,7 @@ cexitstack_new( unsigned int initial_length )
     return stack;
 }
 
-extern int
+inline extern int
 cexitstack_init( cexitstack *stack, unsigned int initial_length )
 {
     if (!stack) return 0;
@@ -29,7 +29,7 @@ cexitstack_init( cexitstack *stack, unsigned int initial_length )
     return 1;
 }
 
-extern int
+inline extern int
 cexitstack_return( cexitstack *stack, int return_val, unsigned int condition )
 {
     if (stack->items && stack->length > 0) {
@@ -37,14 +37,14 @@ cexitstack_return( cexitstack *stack, int return_val, unsigned int condition )
         while (i-- > 0) {
             cexitstack_item *item = stack->items + i;
             if (item->condition == CEXITSTACK_CONDITION_ALWAYS || condition & item->condition)
-                ( *item->func )( item->object );
+                (*item->func)(item->object);
         }
     }
     cexitstack_free( stack );
     return return_val;
 }
 
-extern int
+inline extern int
 cexitstack_push_full( cexitstack *stack, void *object, unsigned int condition, cexitstack_func *func )
 {
     if (!stack->items) return 0;
@@ -52,12 +52,12 @@ cexitstack_push_full( cexitstack *stack, void *object, unsigned int condition, c
         if (!cexitstack_expand( stack, 0 ))
             return 0;
     cexitstack_item *new_item = &stack->items[stack->length];
-    stack->items[stack->length] = ( cexitstack_item ){ .object = object, .condition = condition, .func = func };
+    stack->items[stack->length] = (cexitstack_item){ .object = object, .condition = condition, .func = func };
     stack->length++;
     return 1;
 }
 
-extern int
+inline extern int
 cexitstack_push_struct( cexitstack *stack, cexitstack_item *item )
 {
     if (!stack->items || !item) return 0;
@@ -69,17 +69,17 @@ cexitstack_push_struct( cexitstack *stack, cexitstack_item *item )
     return 1;
 }
 
-extern void
+inline extern void
 cexitstack_func_free( void *object )
 {
     free( object );
 }
 
-int
+inline int
 cexitstack_expand( cexitstack *stack, unsigned int added_capacity )
 {
     if (!stack->items || !stack->capacity) return 0;
-    unsigned int new_capacity = stack->capacity + ( added_capacity ? added_capacity : CEXITSTACK_DEFAULT_CAPACITY_INCREMENT );
+    unsigned int new_capacity = stack->capacity + (added_capacity ? added_capacity : CEXITSTACK_DEFAULT_CAPACITY_INCREMENT);
     cexitstack_item *new_items = realloc( stack->items, sizeof( cexitstack_item ) * new_capacity );
     if (!new_items) return 0;
     stack->items = new_items;
@@ -87,7 +87,7 @@ cexitstack_expand( cexitstack *stack, unsigned int added_capacity )
     return 1;
 }
 
-extern void
+inline extern void
 cexitstack_free( cexitstack *stack )
 {
     if (stack) {
