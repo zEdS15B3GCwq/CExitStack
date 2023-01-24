@@ -7,13 +7,15 @@
 
 typedef void cexitstack_func( void * );
 
-typedef struct _cexitstack_item {
+typedef struct _cexitstack_item
+{
     void *object;
     unsigned int condition;
     cexitstack_func *func;
 } cexitstack_item;
 
-typedef struct _cexitstack {
+typedef struct _cexitstack
+{
     unsigned int length;
     unsigned int capacity;
     unsigned int stack_allocated;
@@ -50,7 +52,7 @@ int avoid_using_this_macro_internal_variable = (stack).length;                  
 while (avoid_using_this_macro_internal_variable-- > 0) {                              \
     cexitstack_item *item = (stack).items + avoid_using_this_macro_internal_variable; \
     if (item->condition == CEXITSTACK_CONDITION_ALWAYS || (cond) & item->condition)   \
-        ( *item->func )( item->object );                                          \
+        ( *item->func )( item->object );                                              \
 }                                                                                     \
 return (retval); }
 
