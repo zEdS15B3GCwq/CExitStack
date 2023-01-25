@@ -45,7 +45,7 @@ int yourfunction() {
 
 Here, `A` is a variable allocated with `calloc`, that later is freed by `free(A)`. A stack is created, `A` is pushed onto it specifying that `free()` will be called in all cases when it's popped. `cexitstack_func_free` is a wrapper around `free()` that accepts a `void *` pointer and calls `free()` with it. `CExitStack` is agnostic of item types and what the pushed function does - any `void (void *)` function will do. `CEXITSTACK_CONDITION_ALWAYS` == 0, and is a treated as a special case that matches any condition.
 
-`cexitstack_new( 0 )` allocates the a default sized (n=10) array for stack items. This array is reallocated when the capacity is reached.
+`cexitstack_new( 0 )` allocates the stack struct and a default sized (n=10) array for stack items using `calloc`. The item array is expanded (`realloc`) when the capacity is reached. Default size and default increment size are in the header file (`CEXITSTACK_DEFAULT_INITIAL_CAPACITY` and `CEXITSTACK_DEFAULT_CAPACITY_INCREMENT`).
 
 `cexitstack_return` pops all items and executes their functions if the provided condition matches; it always returns whatever return code is provided, the reason for this is so that it can be used after `return` instead of using up another code line. So, this does the same:
 
@@ -78,7 +78,7 @@ int yourfunction() {
 
 The only difference between this and case A is that the stack struct itself isn't allocated dynamically. The stack item array still is allocated with `calloc`.
 
-### Use case C, fixed-size array with MARCOs, no dynamic allocation
+### Use case C, fixed-size array with MACROs, no dynamic allocation
 
 ```C
 int yourfunction() {
