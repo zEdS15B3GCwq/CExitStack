@@ -1,4 +1,6 @@
 #pragma once
+#ifndef CEXITSTACK_H
+#define CEXITSTACK_H
 
 #define CEXITSTACK_CONDITION_ALWAYS 0
 #define CEXITSTACK_CONDITION_ERROR 1
@@ -56,3 +58,4 @@ while (avoid_using_this_macro_internal_variable-- > 0) {                        
 }                                                                                     \
 return (retval); }
 
+#endif
