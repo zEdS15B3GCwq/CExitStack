@@ -1,9 +1,27 @@
-# CExitStack
+# CExitStack / GExitstack
 Inspired by ExitStack in Python and *defer* in other languages.
 
 It's in working state but I haven't had enough experience with it to be able to say if it's worth using.
 
 NB This doc has not been checked for errors; included code segments are sloppy and not intended to be working examples.
+
+## Very short explanation
+
+ExitStack stores objects that need to be freed on return from the current function. Freeing can be conditional.
+
+There are several versions included:
+- gexitstack: GArray-based version, needs GLib
+- cexitstack: same functionality without GLib, exitstack main struct can occupy stack or heap
+- CEXITSTACK: macro-based version entirely on stack, with pre-determined constant capacity
+
+This code demonstrates a simple use case. The dynamically allocated array `data` is freed on return. The function returns RETURN_OK:
+```C
+#define RETURN_OK 0
+gexitstack *stack = gexitstack_new();
+gchar data[10000] = g_malloc(sizeof(data));
+gexitstack_push( stack, &data, GEXITSTACK_CONDITION_ALWAYS, g_free );
+return gexitstack_return( stack, RETURN_OK, GEXITSTACK_CONDITION_ALWAYS );
+```
 
 ## What's this?
 
