@@ -24,13 +24,13 @@ typedef struct _cexitstack
     cexitstack_item *items;
 } cexitstack;
 
-inline cexitstack *cexitstack_new( unsigned int initial_length );
-inline int cexitstack_init( cexitstack *stack, unsigned int initial_length );
-inline int cexitstack_return( cexitstack *stack, int return_val, unsigned int condition );
-inline int cexitstack_push_full( cexitstack *stack, void *object, unsigned int condition, cexitstack_func *func );
-inline int cexitstack_push_struct( cexitstack *stack, cexitstack_item *item );
-inline void cexitstack_free( cexitstack *stack );
-inline void cexitstack_func_free( void *object );
+extern inline cexitstack *cexitstack_new( unsigned int initial_length );
+extern inline int cexitstack_init( cexitstack *stack, unsigned int initial_length );
+extern inline int cexitstack_return( cexitstack *stack, int return_val, unsigned int condition );
+extern inline int cexitstack_push_full( cexitstack *stack, void *object, unsigned int condition, cexitstack_func *func );
+extern inline int cexitstack_push_struct( cexitstack *stack, cexitstack_item *item );
+extern inline void cexitstack_free( cexitstack *stack );
+extern inline void cexitstack_func_free( void *object );
 
 #define cexitstack_push(X, Y, ...) _Generic((Y), \
     cexitstack_item *: cexitstack_push_struct,   \

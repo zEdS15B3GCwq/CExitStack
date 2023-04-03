@@ -1,7 +1,9 @@
 #include <stdlib.h>
 #include <assert.h>
+#include <glib.h>
 
 #include "cexitstack.h"
+#include "gexitstack.h"
 
 void test_new_default( void )
 {
@@ -69,7 +71,7 @@ void test_push_one_struct( void )
     cexitstack_push_struct( &stack, &item );
     assert( stack.length == 1 );
     assert( stack.items[0].condition == 1 && stack.items[0].func == &cexitstack_func_free && stack.items[0].object == &i );
-    assert( *(int *)(stack.items[0].object) == i );
+    assert( *(int *)( stack.items[0].object ) == i );
     free( stack.items );
 }
 
@@ -81,7 +83,7 @@ void test_push_one_full( void )
     cexitstack_push_full( &stack, &i, 1, &cexitstack_func_free );
     assert( stack.length == 1 );
     assert( stack.items[0].condition == 1 && stack.items[0].func == &cexitstack_func_free && stack.items[0].object == &i );
-    assert( *(int *)(stack.items[0].object) == i );
+    assert( *(int *)( stack.items[0].object ) == i );
     free( stack.items );
 }
 
@@ -142,7 +144,7 @@ void test_cexitstack_func_free( void )
 {
     cexitstack_func *fun = &cexitstack_func_free;
     int *i = calloc( 1, sizeof( int ) );
-    (*fun)(i);
+    ( *fun )( i );
 }
 
 void cexitstack_func_set( void *target )
@@ -229,8 +231,8 @@ void test_macro_push( void )
     CEXITSTACK_PUSH( stack, &objects[0], 2, &cexitstack_func_free );
     CEXITSTACK_PUSH( stack, &objects[1], 3, &cexitstack_func_free );
     assert( stack.capacity == 5 && stack.length == 2 );
-    assert( stack.items[0].condition == 2 && *(int *)(stack.items[0].object) == 1 && stack.items[0].func == &cexitstack_func_free );
-    assert( stack.items[1].condition == 3 && *(int *)(stack.items[1].object) == 2 && stack.items[1].func == &cexitstack_func_free );
+    assert( stack.items[0].condition == 2 && *(int *)( stack.items[0].object ) == 1 && stack.items[0].func == &cexitstack_func_free );
+    assert( stack.items[1].condition == 3 && *(int *)( stack.items[1].object ) == 2 && stack.items[1].func == &cexitstack_func_free );
 }
 
 #define TEST_MACRO_RETURN_N 5
@@ -253,6 +255,147 @@ void test_macro_return( void )
         assert( results[i] == expect[i] );
 }
 
+void test_new_g( void )
+{
+    gexitstack *stack = gexitstack_new();
+    assert( stack );
+    assert( stack->len == 0 );
+    gexitstack_free( &stack );
+}
+
+void test_push_one_struct_g( void )
+{
+    gexitstack *stack = gexitstack_new();
+    assert( stack );
+    int i = 2;
+    gexitstack_item item = {
+        .condition = 1,
+        .func = &cexitstack_func_set,
+        .object = &i
+    };
+    stack = gexitstack_push_struct( stack, &item );
+    assert( stack );
+    assert( stack->len == 1 );
+    gexitstack_item *it = &g_array_index( stack, gexitstack_item, 0 );
+    assert( it->condition == 1 && it->func == &cexitstack_func_set && it->object == &i );
+    assert( *(int *)( it->object ) == i );
+    gexitstack_free( &stack );
+}
+
+void test_push_one_full_g( void )
+{
+    gexitstack *stack = gexitstack_new();
+    assert( stack );
+    int i = 2;
+    stack = gexitstack_push_full( stack, &i, 1, &cexitstack_func_set );
+    assert( stack );
+    assert( stack->len == 1 );
+    gexitstack_item *it = &g_array_index( stack, gexitstack_item, 0 );
+    assert( it->condition == 1 && it->func == &cexitstack_func_set && it->object == &i );
+    assert( *(int *)( it->object ) == i );
+    gexitstack_free( &stack );
+}
+
+void test_push_multiple_g( void )
+{
+    gexitstack *stack = gexitstack_new();
+    assert( stack );
+    int v[TEST_PUSH_MULTIPLE_N] = { 0 };
+    gexitstack_item item = {
+        .condition = 1,
+        .func = &cexitstack_func_set,
+        .object = &v[0]
+    };
+    v[0] = 10;
+    stack = gexitstack_push( stack, &item );
+    assert( stack );
+    for (int i = 1; i < TEST_PUSH_MULTIPLE_N; i++) {
+        v[i] = 10 + i;
+        stack = gexitstack_push( stack, &v[i], 1, &cexitstack_func_set );
+        assert( stack );
+        assert( stack->len == i + 1 );
+    }
+    for (int i = 0; i < TEST_PUSH_MULTIPLE_N; i++) {
+        gexitstack_item *it = &g_array_index( stack, gexitstack_item, i );
+        assert( it->condition == 1 && it->func == &cexitstack_func_set && it->object == &v[i] );
+        assert( *(int *)( it->object ) == 10 + i );
+    }
+    gexitstack_free( &stack );
+}
+
+void test_free_g( void )
+{
+    gexitstack *stack = gexitstack_new();
+    assert( stack );
+    int i = 2;
+    stack = gexitstack_push_full( stack, &i, 1, &cexitstack_func_set );
+    assert( stack );
+    assert( stack->len == 1 );
+    gexitstack_free( &stack );
+    assert( !stack );
+    assert( i == 2 );
+}
+
+void test_free_empty_g( void )
+{
+    gexitstack *stack = gexitstack_new();
+    assert( stack );
+    gexitstack_free( &stack );
+    assert( !stack );
+}
+
+void test_return_empty_g()
+{
+    gexitstack *stack = gexitstack_new();
+    assert( stack );
+    gint r = gexitstack_return( stack, 1, GEXITSTACK_CONDITION_ALWAYS );
+}
+
+void test_return_one_condition_g()
+{
+    gexitstack *stack = gexitstack_new();
+    assert( stack );
+
+    int results[TEST_RETURN_SET_N] = { 0 };
+    int expect[TEST_RETURN_SET_N] = { 1, 1, 1, 1, 1 };
+    for (int i = 0; i < TEST_RETURN_SET_N; i++)
+        gexitstack_push( stack, results + i, GEXITSTACK_CONDITION_ALWAYS, &cexitstack_func_set );
+    assert( gexitstack_return( stack, -1, GEXITSTACK_CONDITION_ALWAYS ) == -1 );
+    for (int i = 0; i < TEST_RETURN_SET_N; i++)
+        assert( results[i] == expect[i] );
+}
+
+void test_return_one_condition_partial_g()
+{
+    gexitstack *stack = gexitstack_new();
+    assert( stack );
+
+    int results[TEST_RETURN_SET_N] = { 0 };
+    guint conditions[TEST_RETURN_SET_N] = { 2, GEXITSTACK_CONDITION_ALWAYS, 1, 4, 2 };
+    int expect[TEST_RETURN_SET_N] = { 1, 1, 0, 0, 1 };
+    for (int i = 0; i < TEST_RETURN_SET_N; i++)
+        gexitstack_push( stack, results + i, conditions[i], &cexitstack_func_set );
+    assert( gexitstack_return( stack, -1, 2 ) == -1 );
+    for (int i = 0; i < TEST_RETURN_SET_N; i++)
+        assert( results[i] == expect[i] );
+}
+
+void test_return_multiple_conditions_partial_g()
+{
+    gexitstack *stack = gexitstack_new();
+    assert( stack );
+
+    int results[TEST_RETURN_SET_N] = { 0 };
+    guint conditions[TEST_RETURN_SET_N] = { 2, GEXITSTACK_CONDITION_ALWAYS, 1, 4, 2 };
+    int expect[TEST_RETURN_SET_N] = { 1, 1, 0, 1, 1 };
+    for (int i = 0; i < TEST_RETURN_SET_N; i++)
+        gexitstack_push( stack, results + i, conditions[i], &cexitstack_func_set );
+    assert( gexitstack_return( stack, -1, 2 | 4 ) == -1 );
+    for (int i = 0; i < TEST_RETURN_SET_N; i++)
+        assert( results[i] == expect[i] );
+}
+
+
 int main( int argc, char **argv )
 {
     test_new_default();
@@ -274,4 +417,14 @@ int main( int argc, char **argv )
     test_macro_init();
     test_macro_push();
     test_macro_return();
+    test_new_g();
+    test_free_empty_g();
+    test_push_one_struct_g();
+    test_push_one_full_g();
+    test_push_multiple_g();
+    test_free_g();
+    test_return_empty_g();
+    test_return_one_condition_g();
+    test_return_one_condition_partial_g();
+    test_return_multiple_conditions_partial_g();
 }

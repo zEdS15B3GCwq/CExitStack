@@ -17,15 +17,15 @@ typedef struct _gexitstack_item
 
 typedef GArray gexitstack;
 
-inline gexitstack *gexitstack_new( void );
-inline int gexitstack_return( gexitstack *stack, gint return_val, guint condition );
-inline gexitstack *gexitstack_push_full( gexitstack *stack, gpointer object, guint condition, GDestroyNotify func );
-inline gexitstack *gexitstack_push_struct( gexitstack *stack, gexitstack_item *item );
-inline void gexitstack_free( gexitstack *stack );
+extern inline gexitstack *gexitstack_new( void );
+extern inline int gexitstack_return( gexitstack *stack, const gint return_val, const guint condition );
+extern inline gexitstack *gexitstack_push_full( gexitstack *stack, const gpointer object, guint condition, const GDestroyNotify func );
+extern inline gexitstack *gexitstack_push_struct( gexitstack *stack, const gexitstack_item *item );
+extern inline void gexitstack_free( gexitstack **stack );
 
 #define gexitstack_push(X, Y, ...) _Generic((Y), \
     gexitstack_item *: gexitstack_push_struct,   \
-    gpointer: gexitstack_push_full               \
+    default: gexitstack_push_full                \
 ) ((X), (Y), ## __VA_ARGS__);
 
 #endif

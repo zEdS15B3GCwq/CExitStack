@@ -2,7 +2,7 @@
 
 #include "gexitstack.h"
 
-static void gexitstack_item_destroy( gexitstack_item *item );
+static void gexitstack_item_destroy( gexitstack_item *const item );
 
 inline gexitstack *
 gexitstack_new( void )
@@ -13,7 +13,7 @@ gexitstack_new( void )
 }
 
 inline int
-gexitstack_return( gexitstack *stack, gint return_val, guint condition )
+gexitstack_return( gexitstack *stack, const gint return_val, const guint condition )
 {
     for (guint i = stack->len; i > 0; i--) {
         gexitstack_item *item = &g_array_index( stack, gexitstack_item, i - 1 );
@@ -25,26 +25,28 @@ gexitstack_return( gexitstack *stack, gint return_val, guint condition )
 }
 
 inline gexitstack *
-gexitstack_push_full( gexitstack *stack, gpointer object, guint condition, GDestroyNotify func )
+gexitstack_push_full( gexitstack *stack, const gpointer object, guint condition, const GDestroyNotify func )
 {
-    gexitstack_item new_item = ( gexitstack_item ){ .object = object, .condition = condition, .func = func };
+    const gexitstack_item new_item = ( gexitstack_item ){ .object = object, .condition = condition, .func = func };
     return g_array_append_vals( stack, &new_item, 1 );
 }
 
 inline gexitstack *
-gexitstack_push_struct( gexitstack *stack, gexitstack_item *item )
+gexitstack_push_struct( gexitstack *stack, const gexitstack_item *item )
 {
     return g_array_append_vals( stack, item, 1 );
 }
 
 inline void
-gexitstack_free( gexitstack *stack )
+gexitstack_free( gexitstack **stack )
 {
-    g_array_unref( stack );
+    g_clear_pointer( stack, g_array_unref );
 }
 
 static void
-gexitstack_item_destroy( gexitstack_item *item )
+gexitstack_item_destroy( gexitstack_item *const item )
 {
     g_clear_pointer( &item->object, item->func );
+    item->condition = 0;
+    item->func = NULL;
 }
