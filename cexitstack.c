@@ -3,9 +3,9 @@
 
 #include "cexitstack.h"
 
-int cexitstack_expand( cexitstack *stack, unsigned int added_capacity );
+inline static int cexitstack_expand( cexitstack *stack, unsigned int added_capacity );
 
-inline extern cexitstack *
+inline cexitstack *
 cexitstack_new( unsigned int initial_length )
 {
     cexitstack *stack = calloc( 1, sizeof( cexitstack ) );
@@ -18,7 +18,7 @@ cexitstack_new( unsigned int initial_length )
     return stack;
 }
 
-inline extern int
+inline int
 cexitstack_init( cexitstack *stack, unsigned int initial_length )
 {
     if (!stack) return 0;
@@ -29,7 +29,7 @@ cexitstack_init( cexitstack *stack, unsigned int initial_length )
     return 1;
 }
 
-inline extern int
+inline int
 cexitstack_return( cexitstack *stack, int return_val, unsigned int condition )
 {
     if (stack->items && stack->length > 0) {
@@ -44,7 +44,7 @@ cexitstack_return( cexitstack *stack, int return_val, unsigned int condition )
     return return_val;
 }
 
-inline extern int
+inline int
 cexitstack_push_full( cexitstack *stack, void *object, unsigned int condition, cexitstack_func *func )
 {
     if (!stack->items) return 0;
@@ -57,7 +57,7 @@ cexitstack_push_full( cexitstack *stack, void *object, unsigned int condition, c
     return 1;
 }
 
-inline extern int
+inline int
 cexitstack_push_struct( cexitstack *stack, cexitstack_item *item )
 {
     if (!stack->items || !item) return 0;
@@ -69,13 +69,16 @@ cexitstack_push_struct( cexitstack *stack, cexitstack_item *item )
     return 1;
 }
 
-inline extern void
+inline void
 cexitstack_func_free( void *object )
 {
-    if (object) free( object );
+    if (object) {
+        free( object );
+        object = NULL;
+    }
 }
 
-inline int
+inline static int
 cexitstack_expand( cexitstack *stack, unsigned int added_capacity )
 {
     if (!stack->items || !stack->capacity) return 0;
@@ -87,7 +90,7 @@ cexitstack_expand( cexitstack *stack, unsigned int added_capacity )
     return 1;
 }
 
-inline extern void
+inline void
 cexitstack_free( cexitstack *stack )
 {
     if (stack) {
