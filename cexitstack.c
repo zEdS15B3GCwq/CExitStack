@@ -72,10 +72,7 @@ cexitstack_push_struct( cexitstack *stack, cexitstack_item *item )
 inline void
 cexitstack_func_free( void *object )
 {
-    if (object) {
-        free( object );
-        object = NULL;
-    }
+    if (object) free( object );
 }
 
 inline static int
